@@ -7,7 +7,7 @@ export default function App() {
     <CartProvider>
       <Router>
         <Routes>
-          <Route path="/" element={<HomePage />} />
+          <Route path="/daLux-premium-health-beauty" element={<HomePage />} />
         </Routes>
       </Router>
     </CartProvider>
