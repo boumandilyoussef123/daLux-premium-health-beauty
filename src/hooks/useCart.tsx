@@ -1,11 +1,18 @@
-import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
-import { CartItem } from '@/shared/types';
+import {
+  useState,
+  useEffect,
+  createContext,
+  useContext,
+  ReactNode,
+} from "react";
+import { CartItem } from "@/shared/types";
+import { products as staticProducts } from "@/shared/staticData";
 
 interface CartContextType {
   items: CartItem[];
-  addToCart: (productId: number, quantity?: number) => Promise<void>;
-  updateQuantity: (itemId: number, quantity: number) => Promise<void>;
-  removeFromCart: (itemId: number) => Promise<void>;
+  addToCart: (productId: number, quantity?: number) => void;
+  updateQuantity: (itemId: number, quantity: number) => void;
+  removeFromCart: (itemId: number) => void;
   getTotalPrice: () => number;
   getTotalItems: () => number;
   sessionId: string;
@@ -18,84 +25,94 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId] = useState(() => {
-    let id = localStorage.getItem('sessionId');
+    let id = localStorage.getItem("sessionId");
     if (!id) {
       id = Math.random().toString(36).substring(2, 15);
-      localStorage.setItem('sessionId', id);
+      localStorage.setItem("sessionId", id);
     }
     return id;
   });
 
-  const fetchCart = async () => {
-    try {
-      const response = await fetch(`/api/cart/${sessionId}`);
-      if (response.ok) {
-        const cartItems = await response.json();
-        setItems(cartItems);
-      }
-    } catch (error) {
-      console.error('Failed to fetch cart:', error);
-    }
-  };
-
   useEffect(() => {
-    fetchCart();
+    const savedCart = localStorage.getItem(`cart-${sessionId}`);
+    if (savedCart) {
+      setItems(JSON.parse(savedCart));
+    }
   }, [sessionId]);
 
-  const addToCart = async (productId: number, quantity = 1) => {
+  const saveCartToLocalStorage = (cartItems: CartItem[]) => {
+    localStorage.setItem(`cart-${sessionId}`, JSON.stringify(cartItems));
+  };
+
+  const addToCart = (productId: number, quantity = 1) => {
     setIsLoading(true);
-    try {
-      const response = await fetch('/api/cart', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId, productId, quantity }),
-      });
-      
-      if (response.ok) {
-        await fetchCart();
-      }
-    } catch (error) {
-      console.error('Failed to add to cart:', error);
+    const product = staticProducts.find((p) => p.id === productId);
+    if (!product) {
+      setIsLoading(false);
+      return;
     }
+
+    setItems((prevItems) => {
+      const existingItem = prevItems.find(
+        (item) => item.product_id === productId
+      );
+      let newItems;
+
+      if (existingItem) {
+        newItems = prevItems.map((item) =>
+          item.product_id === productId
+            ? { ...item, quantity: item.quantity + quantity }
+            : item
+        );
+      } else {
+        const newItem: CartItem = {
+          id: Date.now(),
+          session_id: sessionId,
+          product_id: productId,
+          quantity,
+          name: product.name,
+          price: product.price,
+          image_url: product.image_url,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+        newItems = [...prevItems, newItem];
+      }
+
+      saveCartToLocalStorage(newItems);
+      return newItems;
+    });
     setIsLoading(false);
   };
 
-  const updateQuantity = async (itemId: number, quantity: number) => {
+  const updateQuantity = (itemId: number, quantity: number) => {
     setIsLoading(true);
-    try {
-      const response = await fetch(`/api/cart/${itemId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ quantity }),
-      });
-      
-      if (response.ok) {
-        await fetchCart();
-      }
-    } catch (error) {
-      console.error('Failed to update quantity:', error);
-    }
+    setItems((prevItems) => {
+      const newItems =
+        quantity <= 0
+          ? prevItems.filter((item) => item.id !== itemId)
+          : prevItems.map((item) =>
+              item.id === itemId ? { ...item, quantity } : item
+            );
+
+      saveCartToLocalStorage(newItems);
+      return newItems;
+    });
     setIsLoading(false);
   };
 
-  const removeFromCart = async (itemId: number) => {
+  const removeFromCart = (itemId: number) => {
     setIsLoading(true);
-    try {
-      const response = await fetch(`/api/cart/${itemId}`, {
-        method: 'DELETE',
-      });
-      
-      if (response.ok) {
-        await fetchCart();
-      }
-    } catch (error) {
-      console.error('Failed to remove from cart:', error);
-    }
+    setItems((prevItems) => {
+      const newItems = prevItems.filter((item) => item.id !== itemId);
+      saveCartToLocalStorage(newItems);
+      return newItems;
+    });
     setIsLoading(false);
   };
 
   const getTotalPrice = () => {
-    return items.reduce((total, item) => total + (item.price * item.quantity), 0);
+    return items.reduce((total, item) => total + item.price * item.quantity, 0);
   };
 
   const getTotalItems = () => {
@@ -103,16 +120,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <CartContext.Provider value={{
-      items,
-      addToCart,
-      updateQuantity,
-      removeFromCart,
-      getTotalPrice,
-      getTotalItems,
-      sessionId,
-      isLoading,
-    }}>
+    <CartContext.Provider
+      value={{
+        items,
+        addToCart,
+        updateQuantity,
+        removeFromCart,
+        getTotalPrice,
+        getTotalItems,
+        sessionId,
+        isLoading,
+      }}
+    >
       {children}
     </CartContext.Provider>
   );
@@ -121,7 +140,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 export function useCart() {
   const context = useContext(CartContext);
   if (context === undefined) {
-    throw new Error('useCart must be used within a CartProvider');
+    throw new Error("useCart must be used within a CartProvider");
   }
   return context;
 }

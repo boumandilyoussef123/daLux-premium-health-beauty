@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
 import { Category } from '@/shared/types';
+import { categories } from '@/shared/staticData';
 
 interface CategoryGridProps {
   onCategorySelect: (categoryId: number | null) => void;
@@ -7,39 +7,6 @@ interface CategoryGridProps {
 }
 
 export default function CategoryGrid({ onCategorySelect, selectedCategory }: CategoryGridProps) {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchCategories();
-  }, []);
-
-  const fetchCategories = async () => {
-    try {
-      const response = await fetch('/api/categories');
-      if (response.ok) {
-        const data = await response.json();
-        setCategories(data);
-      }
-    } catch (error) {
-      console.error('Failed to fetch categories:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        {[...Array(6)].map((_, i) => (
-          <div key={i} className="animate-pulse">
-            <div className="bg-gray-200 rounded-2xl h-32 mb-3"></div>
-            <div className="bg-gray-200 rounded h-4 w-3/4 mx-auto"></div>
-          </div>
-        ))}
-      </div>
-    );
-  }
 
   return (
     <section className="py-16 bg-gray-50">

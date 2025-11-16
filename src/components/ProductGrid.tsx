@@ -1,55 +1,43 @@
-import { useEffect, useState } from 'react';
-import { Product } from '@/shared/types';
-import ProductCard from './ProductCard';
-import { Loader2 } from 'lucide-react';
+import { useMemo, useState } from "react";
+import { Product } from "@/shared/types";
+import ProductCard from "./ProductCard";
+import { products as staticProducts } from "@/shared/staticData";
 
 interface ProductGridProps {
   selectedCategory: number | null;
   searchQuery: string;
 }
 
-export default function ProductGrid({ selectedCategory, searchQuery }: ProductGridProps) {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+export default function ProductGrid({
+  selectedCategory,
+  searchQuery,
+}: ProductGridProps) {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
-  useEffect(() => {
-    fetchProducts();
-  }, [selectedCategory, searchQuery]);
+  const filteredProducts = useMemo(() => {
+    let filtered = staticProducts;
 
-  const fetchProducts = async () => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams();
-      if (selectedCategory) params.append('category', selectedCategory.toString());
-      if (searchQuery) params.append('search', searchQuery);
-      
-      const response = await fetch(`/api/products?${params}`);
-      if (response.ok) {
-        const data = await response.json();
-        setProducts(data);
-      }
-    } catch (error) {
-      console.error('Failed to fetch products:', error);
-    } finally {
-      setLoading(false);
+    if (selectedCategory) {
+      filtered = filtered.filter((p) => p.category_id === selectedCategory);
     }
-  };
+
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (p) =>
+          p.name.toLowerCase().includes(query) ||
+          p.description?.toLowerCase().includes(query)
+      );
+    }
+
+    return filtered;
+  }, [selectedCategory, searchQuery]);
 
   const handleQuickView = (product: Product) => {
     setSelectedProduct(product);
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-16">
-        <div className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin text-emerald-600 mx-auto mb-4" />
-          <p className="text-gray-600">Loading products...</p>
-        </div>
-      </div>
-    );
-  }
+  const products = filteredProducts;
 
   if (products.length === 0) {
     return (
@@ -57,8 +45,12 @@ export default function ProductGrid({ selectedCategory, searchQuery }: ProductGr
         <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
           <span className="text-4xl">🔍</span>
         </div>
-        <h3 className="text-xl font-semibold text-gray-900 mb-2">No products found</h3>
-        <p className="text-gray-600">Try adjusting your search or browse our categories</p>
+        <h3 className="text-xl font-semibold text-gray-900 mb-2">
+          No products found
+        </h3>
+        <p className="text-gray-600">
+          Try adjusting your search or browse our categories
+        </p>
       </div>
     );
   }
@@ -69,12 +61,17 @@ export default function ProductGrid({ selectedCategory, searchQuery }: ProductGr
         <div className="flex items-center justify-between mb-8">
           <div>
             <h2 className="text-2xl font-bold text-gray-900">
-              {searchQuery ? `Search Results for "${searchQuery}"` : 
-               selectedCategory ? 'Category Products' : 'All Products'}
+              {searchQuery
+                ? `Search Results for "${searchQuery}"`
+                : selectedCategory
+                ? "Category Products"
+                : "All Products"}
             </h2>
-            <p className="text-gray-600 mt-1">{products.length} products found</p>
+            <p className="text-gray-600 mt-1">
+              {products.length} products found
+            </p>
           </div>
-          
+
           <select className="border border-gray-300 rounded-lg px-4 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
             <option>Sort by: Featured</option>
             <option>Price: Low to High</option>
@@ -95,9 +92,7 @@ export default function ProductGrid({ selectedCategory, searchQuery }: ProductGr
         </div>
 
         {/* Featured Products Section */}
-        {!selectedCategory && !searchQuery && (
-          <FeaturedProducts />
-        )}
+        {!selectedCategory && !searchQuery && <FeaturedProducts />}
       </div>
 
       {/* Quick View Modal */}
@@ -112,36 +107,23 @@ export default function ProductGrid({ selectedCategory, searchQuery }: ProductGr
 }
 
 function FeaturedProducts() {
-  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  const featuredProducts = staticProducts
+    .filter((p) => p.is_featured === 1)
+    .slice(0, 4);
 
-  useEffect(() => {
-    fetchFeaturedProducts();
-  }, []);
-
-  const fetchFeaturedProducts = async () => {
-    try {
-      const response = await fetch('/api/products?featured=true');
-      if (response.ok) {
-        const data = await response.json();
-        setFeaturedProducts(data.slice(0, 4)); // Show only 4 featured products
-      }
-    } catch (error) {
-      console.error('Failed to fetch featured products:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (loading || featuredProducts.length === 0) return null;
+  if (featuredProducts.length === 0) return null;
 
   return (
     <div className="mt-16 pt-16 border-t border-gray-200">
       <div className="text-center mb-12">
-        <h3 className="text-3xl font-bold text-gray-900 mb-4">Featured Products</h3>
-        <p className="text-lg text-gray-600">Our most popular and highly-rated products</p>
+        <h3 className="text-3xl font-bold text-gray-900 mb-4">
+          Featured Products
+        </h3>
+        <p className="text-lg text-gray-600">
+          Our most popular and highly-rated products
+        </p>
       </div>
-      
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {featuredProducts.map((product) => (
           <ProductCard key={product.id} product={product} />
@@ -151,7 +133,13 @@ function FeaturedProducts() {
   );
 }
 
-function QuickViewModal({ product, onClose }: { product: Product; onClose: () => void }) {
+function QuickViewModal({
+  product,
+  onClose,
+}: {
+  product: Product;
+  onClose: () => void;
+}) {
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
@@ -162,33 +150,43 @@ function QuickViewModal({ product, onClose }: { product: Product; onClose: () =>
               onClick={onClose}
               className="p-2 hover:bg-gray-100 rounded-full transition-colors"
             >
-              <span className="sr-only">Close</span>
-              ✕
+              <span className="sr-only">Close</span>✕
             </button>
           </div>
-          
+
           <div className="grid md:grid-cols-2 gap-6">
             <img
-              src={product.image_url || 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=400'}
+              src={
+                product.image_url ||
+                "https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=400"
+              }
               alt={product.name}
               className="w-full h-64 object-cover rounded-xl"
             />
-            
+
             <div className="space-y-4">
               <div>
-                <p className="text-emerald-600 font-medium">{product.category_name}</p>
-                <h4 className="text-xl font-bold text-gray-900">{product.name}</h4>
+                <p className="text-emerald-600 font-medium">
+                  {product.category_name}
+                </p>
+                <h4 className="text-xl font-bold text-gray-900">
+                  {product.name}
+                </h4>
               </div>
-              
+
               <p className="text-gray-600">{product.description}</p>
-              
+
               <div className="flex items-center space-x-2">
-                <span className="text-2xl font-bold text-gray-900">${product.price}</span>
+                <span className="text-2xl font-bold text-gray-900">
+                  ${product.price}
+                </span>
                 {product.original_price && (
-                  <span className="text-lg text-gray-500 line-through">${product.original_price}</span>
+                  <span className="text-lg text-gray-500 line-through">
+                    ${product.original_price}
+                  </span>
                 )}
               </div>
-              
+
               <button
                 onClick={onClose}
                 className="w-full bg-emerald-600 text-white py-3 rounded-full font-semibold hover:bg-emerald-700 transition-colors"

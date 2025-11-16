@@ -16,9 +16,9 @@ export default function ProductCard({
   const [isLoading, setIsLoading] = useState(false);
   const { addToCart } = useCart();
 
-  const handleAddToCart = async () => {
+  const handleAddToCart = () => {
     setIsLoading(true);
-    await addToCart(product.id);
+    addToCart(product.id);
     setIsLoading(false);
   };
 
