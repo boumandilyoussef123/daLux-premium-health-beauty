@@ -1,14 +1,14 @@
-import { useState } from 'react';
-import Header from '@/react-app/components/Header';
-import Hero from '@/react-app/components/Hero';
-import CategoryGrid from '@/react-app/components/CategoryGrid';
-import ProductGrid from '@/react-app/components/ProductGrid';
-import CartSidebar from '@/react-app/components/CartSidebar';
-import Footer from '@/react-app/components/Footer';
+import { useState } from "react";
+import Header from "@/components/Header";
+import Hero from "@/components/Hero";
+import CategoryGrid from "@/components/CategoryGrid";
+import ProductGrid from "@/components/ProductGrid";
+import CartSidebar from "@/components/CartSidebar";
+import Footer from "@/components/Footer";
 
 export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [isCartOpen, setIsCartOpen] = useState(false);
 
   const handleSearch = (query: string) => {
@@ -18,36 +18,33 @@ export default function Home() {
 
   const handleCategorySelect = (categoryId: number | null) => {
     setSelectedCategory(categoryId);
-    setSearchQuery(''); // Clear search when selecting category
+    setSearchQuery(""); // Clear search when selecting category
   };
 
   return (
     <div className="min-h-screen bg-white">
-      <Header 
+      <Header
         onSearch={handleSearch}
         onToggleCart={() => setIsCartOpen(true)}
       />
-      
+
       <main>
         <Hero />
-        
-        <CategoryGrid 
+
+        <CategoryGrid
           onCategorySelect={handleCategorySelect}
           selectedCategory={selectedCategory}
         />
-        
-        <ProductGrid 
+
+        <ProductGrid
           selectedCategory={selectedCategory}
           searchQuery={searchQuery}
         />
       </main>
-      
+
       <Footer />
-      
-      <CartSidebar 
-        isOpen={isCartOpen}
-        onClose={() => setIsCartOpen(false)}
-      />
+
+      <CartSidebar isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
     </div>
   );
 }

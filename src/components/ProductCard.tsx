@@ -1,14 +1,17 @@
-import { useState } from 'react';
-import { Star, Heart, ShoppingCart, Eye } from 'lucide-react';
-import { Product } from '@/shared/types';
-import { useCart } from '@/react-app/hooks/useCart';
+import { useState } from "react";
+import { Star, Heart, ShoppingCart, Eye } from "lucide-react";
+import { Product } from "@/shared/types";
+import { useCart } from "@/hooks/useCart";
 
 interface ProductCardProps {
   product: Product;
   onQuickView?: (product: Product) => void;
 }
 
-export default function ProductCard({ product, onQuickView }: ProductCardProps) {
+export default function ProductCard({
+  product,
+  onQuickView,
+}: ProductCardProps) {
   const [isLiked, setIsLiked] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { addToCart } = useCart();
@@ -19,8 +22,11 @@ export default function ProductCard({ product, onQuickView }: ProductCardProps) 
     setIsLoading(false);
   };
 
-  const discountPercentage = product.original_price 
-    ? Math.round(((product.original_price - product.price) / product.original_price) * 100)
+  const discountPercentage = product.original_price
+    ? Math.round(
+        ((product.original_price - product.price) / product.original_price) *
+          100
+      )
     : 0;
 
   return (
@@ -28,11 +34,14 @@ export default function ProductCard({ product, onQuickView }: ProductCardProps) 
       {/* Product Image */}
       <div className="relative overflow-hidden">
         <img
-          src={product.image_url || 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400'}
+          src={
+            product.image_url ||
+            "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400"
+          }
           alt={product.name}
           className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
         />
-        
+
         {/* Discount Badge */}
         {discountPercentage > 0 && (
           <div className="absolute top-3 left-3 bg-red-500 text-white px-2 py-1 rounded-full text-sm font-semibold">
@@ -45,12 +54,14 @@ export default function ProductCard({ product, onQuickView }: ProductCardProps) 
           <button
             onClick={() => setIsLiked(!isLiked)}
             className={`p-2 rounded-full shadow-lg transition-colors ${
-              isLiked ? 'bg-red-500 text-white' : 'bg-white text-gray-600 hover:text-red-500'
+              isLiked
+                ? "bg-red-500 text-white"
+                : "bg-white text-gray-600 hover:text-red-500"
             }`}
           >
-            <Heart className={`w-5 h-5 ${isLiked ? 'fill-current' : ''}`} />
+            <Heart className={`w-5 h-5 ${isLiked ? "fill-current" : ""}`} />
           </button>
-          
+
           <button
             onClick={() => onQuickView?.(product)}
             className="p-2 bg-white text-gray-600 hover:text-emerald-600 rounded-full shadow-lg transition-colors"
@@ -67,7 +78,7 @@ export default function ProductCard({ product, onQuickView }: ProductCardProps) 
             className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-4 rounded-lg font-semibold flex items-center justify-center space-x-2 transition-colors disabled:opacity-50"
           >
             <ShoppingCart className="w-4 h-4" />
-            <span>{isLoading ? 'Adding...' : 'Quick Add'}</span>
+            <span>{isLoading ? "Adding..." : "Quick Add"}</span>
           </button>
         </div>
       </div>
@@ -76,7 +87,7 @@ export default function ProductCard({ product, onQuickView }: ProductCardProps) 
       <div className="p-5">
         {/* Category */}
         <p className="text-sm text-emerald-600 font-medium mb-1">
-          {product.category_name || 'Health'}
+          {product.category_name || "Health"}
         </p>
 
         {/* Product Name */}
@@ -92,8 +103,8 @@ export default function ProductCard({ product, onQuickView }: ProductCardProps) 
                 key={i}
                 className={`w-4 h-4 ${
                   i < Math.floor(product.rating)
-                    ? 'text-yellow-400 fill-current'
-                    : 'text-gray-300'
+                    ? "text-yellow-400 fill-current"
+                    : "text-gray-300"
                 }`}
               />
             ))}
@@ -117,21 +128,22 @@ export default function ProductCard({ product, onQuickView }: ProductCardProps) 
 
         {/* Stock Status */}
         <div className="flex items-center justify-between">
-          <span className={`text-sm font-medium ${
-            product.stock_quantity > 10 
-              ? 'text-green-600' 
-              : product.stock_quantity > 0 
-                ? 'text-yellow-600' 
-                : 'text-red-600'
-          }`}>
-            {product.stock_quantity > 10 
-              ? 'In Stock' 
-              : product.stock_quantity > 0 
-                ? `Only ${product.stock_quantity} left` 
-                : 'Out of Stock'
-            }
+          <span
+            className={`text-sm font-medium ${
+              product.stock_quantity > 10
+                ? "text-green-600"
+                : product.stock_quantity > 0
+                ? "text-yellow-600"
+                : "text-red-600"
+            }`}
+          >
+            {product.stock_quantity > 10
+              ? "In Stock"
+              : product.stock_quantity > 0
+              ? `Only ${product.stock_quantity} left`
+              : "Out of Stock"}
           </span>
-          
+
           {product.is_featured === 1 && (
             <span className="bg-emerald-100 text-emerald-800 text-xs px-2 py-1 rounded-full font-medium">
               Featured

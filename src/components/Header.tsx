@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { Search, ShoppingCart, Menu, X, Heart } from 'lucide-react';
-import { useCart } from '@/react-app/hooks/useCart';
+import { useState } from "react";
+import { Search, ShoppingCart, Menu, X, Heart } from "lucide-react";
+import { useCart } from "@/hooks/useCart";
 
 interface HeaderProps {
   onSearch: (query: string) => void;
@@ -9,7 +9,7 @@ interface HeaderProps {
 
 export default function Header({ onSearch, onToggleCart }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const { getTotalItems } = useCart();
 
   const handleSearch = (e: React.FormEvent) => {
@@ -71,7 +71,11 @@ export default function Header({ onSearch, onToggleCart }: HeaderProps) {
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="md:hidden p-2 text-gray-600 hover:text-emerald-600 transition-colors"
             >
-              {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {isMenuOpen ? (
+                <X className="w-6 h-6" />
+              ) : (
+                <Menu className="w-6 h-6" />
+              )}
             </button>
           </div>
         </div>
@@ -96,16 +100,28 @@ export default function Header({ onSearch, onToggleCart }: HeaderProps) {
         {isMenuOpen && (
           <div className="md:hidden border-t border-gray-100 py-4">
             <nav className="space-y-2">
-              <a href="#categories" className="block px-3 py-2 text-gray-700 hover:text-emerald-600 transition-colors">
+              <a
+                href="#categories"
+                className="block px-3 py-2 text-gray-700 hover:text-emerald-600 transition-colors"
+              >
                 Categories
               </a>
-              <a href="#featured" className="block px-3 py-2 text-gray-700 hover:text-emerald-600 transition-colors">
+              <a
+                href="#featured"
+                className="block px-3 py-2 text-gray-700 hover:text-emerald-600 transition-colors"
+              >
                 Featured
               </a>
-              <a href="#about" className="block px-3 py-2 text-gray-700 hover:text-emerald-600 transition-colors">
+              <a
+                href="#about"
+                className="block px-3 py-2 text-gray-700 hover:text-emerald-600 transition-colors"
+              >
                 About
               </a>
-              <a href="#contact" className="block px-3 py-2 text-gray-700 hover:text-emerald-600 transition-colors">
+              <a
+                href="#contact"
+                className="block px-3 py-2 text-gray-700 hover:text-emerald-600 transition-colors"
+              >
                 Contact
               </a>
             </nav>
