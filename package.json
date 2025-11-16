@@ -1,6 +1,7 @@
 {
   "name": "mocha-app",
   "private": true,
+  "homepage": "https://boumandilyoussef123.github.io/daLux-premium-health-beauty",
   "version": "0.0.0",
   "type": "module",
   "dependencies": {

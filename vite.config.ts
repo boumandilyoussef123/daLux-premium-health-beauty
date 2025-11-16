@@ -5,7 +5,7 @@ import react from "@vitejs/plugin-react";
 export default defineConfig({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   plugins: [react()],
-  base: "/daLux-premium-health-beauty",
+  base: "/daLux-premium-health-beauty/",
   server: {
     allowedHosts: true,
   },
